@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة إدارة أصول الـ IT | الفروع وطباعة العهد والباركود</title>
+    <!-- Bootstrap 5 RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Font Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- JsBarcode for barcode rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-main: #0b1120;
+            --bg-card: #1e293b;
+            --border-card: #334155;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+        .sidebar {
+            background-color: #0f172a;
+            min-height: 100vh;
+            border-left: 1px solid var(--border-card);
+        }
+        .nav-link {
+            color: var(--text-muted);
+            border-radius: 8px;
+            margin: 4px 10px;
+            padding: 10px 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff;
+            background-color: var(--accent);
+        }
+        .nav-link i {
+            margin-left: 10px;
+            width: 22px;
+            text-align: center;
+        }
+        .card-custom {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .table-custom {
+            color: #e2e8f0;
+        }
+        .table-custom thead th {
+            background-color: #334155;
+            color: #94a3b8;
+            font-weight: 700;
+            border: none;
+            padding: 12px 10px;
+        }
+        .table-custom tbody tr {
+            border-bottom: 1px solid #334155;
+        }
+        .table-custom tbody tr:hover {
+            background-color: #273549;
+        }
+        .badge-inuse { background-color: #0284c7; }
+        .badge-stock { background-color: #16a34a; }
+        .badge-maint { background-color: #d97706; }
+        .badge-branch { background-color: #475569; border: 1px solid #64748b; font-weight: 600; }
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            color: #f8fafc;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #0f172a;
+            border-color: #38bdf8;
+            color: #f8fafc;
+            box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
+        }
+        .tab-section {
+            display: none;
+        }
+        .tab-section.active {
+            display: block;
+        }
+
+        /* الطباعة النظيفة للباركود ومحضر العهدة */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .sidebar, .modal-backdrop, .modal-header, .modal-footer, .no-print, nav, button {
+                display: none !important;
+            }
+            .modal {
+                position: static !important;
+                display: block !important;
+                background: none !important;
+            }
+            .modal-dialog {
+                max-width: 100% !important;
+                margin: 0 !important;
+            }
+            .modal-content {
+                border: none !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+            .modal-body {
+                padding: 0 !important;
+                background: white !important;
+            }
+            body > * {
+                visibility: hidden !important;
+            }
+            .printable-area, .printable-area * {
+                visibility: visible !important;
+            }
+            .printable-area {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                background: white !important;
+                color: black !important;
+                box-shadow: none !important;
+            }
+            .asset-sticker-card.printable-area {
+                width: 70mm !important;
+                border: 2px solid #000 !important;
+                margin: 5mm !important;
+                page-break-inside: avoid !important;
+            }
+            .custody-sheet.printable-area {
+                width: 100% !important;
+                padding: 20px !important;
+                border: none !important;
+            }
+        }
+
+        /* كرت ملصق الباركود */
+        
+        /* تصميم ملصق استيكر الـ QR كود للأجهزة */
+        .asset-sticker-card {
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 320px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            text-align: right;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+        .qr-box canvas, .qr-box img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .barcode-label {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px dashed #334155;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        /* ورقة محضر التسليم والاستلام */
+        .custody-sheet {
+            background: #ffffff;
+            color: #0f172a;
+            padding: 35px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid no-print">
+    <div class="row">
+        <!-- القائمة الجانبية -->
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-0">
+            <div class="p-3 text-center border-bottom border-secondary">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                    <img src="data:image/png;base64,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" alt="Morni Logo" style="height: 65px; border-radius: 12px; background: white; padding: 4px; box-shadow: 0 3px 10px rgba(0,0,0,0.5);">
+                </div>
+                <h6 class="fw-bold text-white mb-1">إدارة تقنية المعلومات (IT)</h6>
+                <small class="text-secondary">فروع: الخرج • القادسية • الإدارة • ورشة ثقة • جدة</small>
+            </div>
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" onclick="switchTab('dashboard')">
+                            <i class="fa-solid fa-chart-pie"></i> لوحة التحكم والفروع
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('assets')">
+                            <i class="fa-solid fa-laptop"></i> أصول وأجهزة الفروع
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('network')">
+                            <i class="fa-solid fa-network-wired"></i> راكات وشبكات الفروع
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('custody')">
+                            <i class="fa-solid fa-file-signature text-warning"></i> طباعة محاضر العُهد
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('tickets')">
+                            <i class="fa-solid fa-headset"></i> تذاكر الدعم الفني
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="switchTab('licenses')">
+                            <i class="fa-solid fa-key"></i> التراخيص والبرمجيات
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="p-3 text-center mt-auto border-top border-secondary">
+                <span class="badge bg-primary d-block py-2 mb-1"><i class="fa-solid fa-location-dot me-1"></i> 5 فروع معتمدة</span>
+                <small class="text-muted">الخرج • القادسية • الإدارة • ورشة ثقة • جدة</small>
+            </div>
+        </nav>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            
+            <!-- 1. شاشة لوحة المؤشرات (DASHBOARD) -->
+            <div id="tab-dashboard" class="tab-section active">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">لوحة متابعة أصول فروع الشركة</h2>
+                        <p class="text-secondary mb-0">نظرة شاملة ومحدثة على توزيع العتاد والأجهزة في كل فرع وتذاكر الصيانة.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openAddAssetModal()"><i class="fa-solid fa-plus me-1"></i> إضافة أصل جديد</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card card-custom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-secondary mb-1">إجمالي أصول الشركة</h6>
+                                    <h3 class="fw-bold mb-0 text-white" id="stat-total-assets">0</h3>
+                                </div>
+                                <div class="p-3 bg-primary bg-opacity-25 rounded-circle text-primary">
+                                    <i class="fa-solid fa-laptop-code fa-2x"></i>
+                                </div>
+                            </div>
+                            <small class="text-info mt-2 d-block"><span id="stat-in-use">0</span> قيد الاستخدام في الفروع</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-custom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-secondary mb-1">أجهزة بالمخزن (جاهزة)</h6>
+                                    <h3 class="fw-bold mb-0 text-success" id="stat-in-stock">0</h3>
+                                </div>
+                                <div class="p-3 bg-success bg-opacity-25 rounded-circle text-success">
+                                    <i class="fa-solid fa-boxes-stacked fa-2x"></i>
+                                </div>
+                            </div>
+                            <small class="text-secondary mt-2 d-block">مخزون إضافي للتسليم</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-custom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-secondary mb-1">عدد الفروع النشطة</h6>
+                                    <h3 class="fw-bold mb-0 text-info">5</h3>
+                                </div>
+                                <div class="p-3 bg-info bg-opacity-25 rounded-circle text-info">
+                                    <i class="fa-solid fa-building fa-2x"></i>
+                                </div>
+                            </div>
+                            <small class="text-light mt-2 d-block">تغطية جغرافية كاملة</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-custom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-secondary mb-1">تذاكر الدعم المفتوحة</h6>
+                                    <h3 class="fw-bold mb-0 text-warning" id="stat-open-tickets">0</h3>
+                                </div>
+                                <div class="p-3 bg-warning bg-opacity-25 rounded-circle text-warning">
+                                    <i class="fa-solid fa-headset fa-2x"></i>
+                                </div>
+                            </div>
+                            <small class="text-danger mt-2 d-block">أعطال وبلاغات قيد المتابعة</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- بطاقات إحصائيات الفروع الـ 5 -->
+                <div class="row g-3 mb-4">
+                    <div class="col">
+                        <div class="card card-custom p-3 text-center border-start border-primary border-4">
+                            <small class="text-secondary">فرع الإدارة</small>
+                            <h4 class="fw-bold mt-1 mb-0 text-primary" id="branch-count-admin">0</h4>
+                            <small class="text-muted">أصل مسجل</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card card-custom p-3 text-center border-start border-success border-4">
+                            <small class="text-secondary">فرع الخرج</small>
+                            <h4 class="fw-bold mt-1 mb-0 text-success" id="branch-count-kharj">0</h4>
+                            <small class="text-muted">أصل مسجل</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card card-custom p-3 text-center border-start border-warning border-4">
+                            <small class="text-secondary">فرع القادسية</small>
+                            <h4 class="fw-bold mt-1 mb-0 text-warning" id="branch-count-qad">0</h4>
+                            <small class="text-muted">أصل مسجل</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card card-custom p-3 text-center border-start border-info border-4">
+                            <small class="text-secondary">ورشة ثقة</small>
+                            <h4 class="fw-bold mt-1 mb-0 text-info" id="branch-count-thiqah">0</h4>
+                            <small class="text-muted">أصل مسجل</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card card-custom p-3 text-center border-start border-danger border-4">
+                            <small class="text-secondary">فرع جدة</small>
+                            <h4 class="fw-bold mt-1 mb-0 text-danger" id="branch-count-jed">0</h4>
+                            <small class="text-muted">أصل مسجل</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card card-custom p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-column me-2 text-primary"></i> توزيع الأصول والعتاد عبر الفروع</h5>
+                            <div style="height: 250px;">
+                                <canvas id="branchChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-custom p-4">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie me-2 text-info"></i> حالة الأصول (تشغيل / مخزن / صيانة)</h5>
+                            <div style="height: 250px;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. شاشة الأصول والعتاد (ASSETS) -->
+            <div id="tab-assets" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-laptop text-primary me-2"></i> إدارة الأصول والعتاد في الفروع</h2>
+                        <p class="text-secondary mb-0">جرد وتتبع وتوليد وطباعة باركود لكل جهاز وطباعة نموذج العهدة.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openAddAssetModal()"><i class="fa-solid fa-plus me-1"></i> إضافة أصل جديد</button>
+                        <button class="btn btn-outline-warning" onclick="exportAssetsCSV()"><i class="fa-solid fa-file-csv me-1"></i> تصدير CSV</button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters By Branch -->
+                <div class="card card-custom p-3 mb-4">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" id="assetSearchInput" onkeyup="renderAssetsTable()" class="form-control" placeholder="ابحث بكود الأصل، السريال، الموديل، IP، أو اسم الموظف...">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="assetBranchFilter" onchange="renderAssetsTable()" class="form-select border-primary">
+                                <option value="">🏢 جميع الفروع (All Branches)</option>
+                                <option value="الإدارة">فرع الإدارة</option>
+                                <option value="الخرج">فرع الخرج</option>
+                                <option value="القادسية">فرع القادسية</option>
+                                <option value="ورشة ثقة">ورشة ثقة</option>
+                                <option value="جدة">فرع جدة</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="assetCategoryFilter" onchange="renderAssetsTable()" class="form-select">
+                                <option value="">كل الفئات (Categories)</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="Desktop">Desktop</option>
+                                <option value="Server">Server</option>
+                                <option value="Printer">Printer</option>
+                                <option value="Barcode Scanner">Barcode Scanner</option>
+                                <option value="Switch / Router">Switch / Router</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="assetStatusFilter" onchange="renderAssetsTable()" class="form-select">
+                                <option value="">كل الحالات</option>
+                                <option value="In Use">قيد العمل (In Use)</option>
+                                <option value="In Stock">بالمخزن (In Stock)</option>
+                                <option value="In Maintenance">تحت الصيانة</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assets Table -->
+                <div class="card card-custom p-3">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>كود الأصل (Tag)</th>
+                                    <th>الفرع التابع له</th>
+                                    <th>النوع والموديل</th>
+                                    <th>المواصفات الفنية</th>
+                                    <th>IP / MAC</th>
+                                    <th>الحالة</th>
+                                    <th>المستلم (العهدة)</th>
+                                    <th>ملصق QR</th>
+                                    <th>محضر العهدة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assetsTableBody">
+                                <!-- سيتم تعبئتها بواسطة JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. شاشة أجهزة الشبكة (NETWORK) -->
+            <div id="tab-network" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-network-wired text-info me-2"></i> بنية الشبكات والراكات في كل فرع</h2>
+                        <p class="text-secondary mb-0">متابعة السويتشات، الراوترات، الجدران النارية، والراكات الموزعة على الفروع الخمسة.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-info text-dark fw-bold" onclick="openAddNetModal()"><i class="fa-solid fa-plus me-1"></i> إضافة جهاز شبكة</button>
+                    </div>
+                </div>
+
+                <div class="card card-custom p-3">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>الفرع</th>
+                                    <th>اسم الجهاز (Hostname)</th>
+                                    <th>النوع والموديل</th>
+                                    <th>Management IP</th>
+                                    <th>موقع الراك (Rack Unit)</th>
+                                    <th>الحالة</th>
+                                    <th>فحص مباشر</th>
+                                    <th>ملاحظات</th>
+                                    <th>حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="networkTableBody">
+                                <!-- dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. شاشة محاضر تسليم وتسلم العهد (CUSTODY PRINTING) -->
+            <div id="tab-custody" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-file-signature text-warning me-2"></i> نماذج ومحاضر تسليم وتسلم العُهد</h2>
+                        <p class="text-secondary mb-0">توليد وطباعة استمارة رسمية جاهزة للتوقيع الورقي لحماية عهدة الـ IT وحفظ حقوق الشركة والموظف.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openCustomHandoverModal()"><i class="fa-solid fa-file-circle-plus me-1"></i> إنشاء محضر جديد</button>
+                    </div>
+                </div>
+
+                <div class="card card-custom p-3 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-history me-2 text-info"></i> سجل حركات ومحاضر التسليم والاستلام المنفذة</h5>
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>نوع المحضر</th>
+                                    <th>الفرع</th>
+                                    <th>كود الأصل (Tag)</th>
+                                    <th>اسم الموظف المستلم</th>
+                                    <th>الرقم الوظيفي</th>
+                                    <th>التاريخ</th>
+                                    <th>طباعة المحضر (A4)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="custodyLogTableBody">
+                                <!-- dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. شاشة تذاكر الدعم الفني (TICKETS) -->
+            <div id="tab-tickets" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-headset text-warning me-2"></i> تذاكر الدعم الفني لفروع الشركة</h2>
+                        <p class="text-secondary mb-0">متابعة بلاغات الأعطال في (الخرج، القادسية، الإدارة، ورشة ثقة، جدة).</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning text-dark fw-bold" onclick="openAddTicketModal()"><i class="fa-solid fa-plus me-1"></i> فتح تذكرة جديدة</button>
+                    </div>
+                </div>
+
+                <div class="card card-custom p-3">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>رقم التذكرة</th>
+                                    <th>الفرع</th>
+                                    <th>موضوع المشكلة</th>
+                                    <th>مقدم الطلب</th>
+                                    <th>الأولوية</th>
+                                    <th>الحالة</th>
+                                    <th>الفني المسؤول</th>
+                                    <th>تحديث الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody">
+                                <!-- dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. شاشة التراخيص (LICENSES) -->
+            <div id="tab-licenses" class="tab-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fa-solid fa-key text-success me-2"></i> إدارة التراخيص والبرمجيات</h2>
+                        <p class="text-secondary mb-0">تتبع مفاتيح التفعيل واشتراكات البرامج عبر الفروع.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-success fw-bold" onclick="openAddLicenseModal()"><i class="fa-solid fa-plus me-1"></i> إضافة ترخيص</button>
+                    </div>
+                </div>
+
+                <div class="card card-custom p-3">
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>اسم البرنامج</th>
+                                    <th>الشركة (Vendor)</th>
+                                    <th>مفتاح الترخيص</th>
+                                    <th>إجمالي المقاعد</th>
+                                    <th>المستخدم</th>
+                                    <th>المتبقي</th>
+                                    <th>نسبة الاستهلاك</th>
+                                    <th>حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="licensesTableBody">
+                                <!-- dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- ======================= PRINTABLE MODAL FOR QR CODE STICKER ======================= -->
+<div class="modal fade" id="barcodePrintModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary no-print">
+                <h5 class="modal-title fw-bold text-white"><i class="fa-solid fa-qrcode text-warning me-2"></i> طباعة ملصق QR كود للأصل (جاهز للصق)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center bg-dark py-4">
+                <p class="text-secondary small mb-3 no-print">معاينة الملصق (مقاس مخصص لطابعات الاستيكر والأجهزة):</p>
+                
+                <!-- ملصق الجهاز المخصص للصق -->
+                <div id="printableBarcodeContainer" class="asset-sticker-card mx-auto shadow">
+                    <div class="sticker-header d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-dark">
+                        <div class="d-flex align-items-center">
+                            <img id="stickerLogoImg" src="" alt="Morni" style="height: 32px; border-radius: 4px; margin-left: 6px;">
+                            <span style="font-size: 15px; font-weight: 800; color: #000;">شركة مرني</span>
+                        </div>
+                        <span class="badge bg-dark text-white px-2 py-1" style="font-size: 11px;" id="lblBranch">فرع الإدارة</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between py-1">
+                        <!-- رمز QR كود واضح وعالي الدقة -->
+                        <div id="qrcodeCanvas" class="qr-box p-1 bg-white border border-secondary rounded"></div>
+                        
+                        <!-- تفاصيل الأصل بجانب الـ QR -->
+                        <div class="text-end ps-2 flex-grow-1" style="line-height: 1.35;">
+                            <div class="fw-bold font-monospace text-primary" style="font-size: 18px; letter-spacing: 1px;" id="lblTag">AST-1001</div>
+                            <div class="fw-bold text-dark text-truncate" style="font-size: 13px; max-width: 170px;" id="lblModel">Lenovo ThinkPad</div>
+                            <div class="text-muted font-monospace small" style="font-size: 11px;" id="lblSerial">S/N: PF38XK91</div>
+                            <div class="text-success small fw-bold" style="font-size: 11px;" id="lblUser">العهدة: أحمد محمود</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sticker-footer border-top border-dark pt-1 mt-1 d-flex justify-content-between align-items-center" style="font-size: 9px; color: #555;">
+                        <span>إدارة تقنية المعلومات ITAM</span>
+                        <span>امسح الـ QR لمعاينة بيانات الأصل</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary no-print d-flex justify-content-between">
+                <small class="text-muted"><i class="fa-solid fa-check text-success me-1"></i> متوافق مع طابعات الملصقات (Sticker)</small>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                    <button type="button" class="btn btn-warning text-dark fw-bold px-4" onclick="printElement('printableBarcodeContainer')">
+                        <i class="fa-solid fa-print me-1"></i> طباعة ملصق الـ QR الآن
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ======================= PRINTABLE MODAL FOR CUSTODY<!-- ======================= PRINTABLE MODAL FOR CUSTODY (محضر العهدة) ======================= -->
+<div class="modal fade" id="custodyPrintModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary no-print">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-file-lines text-warning me-2"></i> معاينة وطباعة نموذج محضر تسليم / تسلم عهدة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- منطقة ورقة المحضر الرسمية A4 -->
+                <div id="printableCustodyContainer" class="custody-sheet mx-auto">
+                    <!-- الترويسة الرسمية لشركة مرني Morni -->
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <div class="d-flex align-items-center">
+                            <img src="data:image/png;base64,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" alt="Morni Logo" style="height: 80px; border-radius: 10px; margin-left: 15px; border: 1px solid #cbd5e1; padding: 4px; background: #fff;">
+                            <div>
+                                <h3 class="fw-bold text-dark mb-1">شركة مرني</h3>
+                                <div class="text-primary fw-bold small"><i class="fa-solid fa-building me-1"></i> قسم تقنية المعلومات (IT) - <span id="docBranch">فرع الإدارة</span></div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="badge bg-warning text-dark px-3 py-2 fs-6 mb-1" id="docTypeTitle">نموذج محضر تسليم عُهدة تقنية</div>
+                            <div class="text-muted small">رقم المستند: MRN-IT-<span id="docNumber">1001</span></div>
+                        </div>
+                        <div class="text-end text-muted small">
+                            <div><strong>تاريخ الإصدار:</strong> <span id="docDate">2026-10-28</span></div>
+                            <div><strong>نوع الوثيقة:</strong> إقرار عهدة رسمية</div>
+                            <div><strong>المقر:</strong> الرياض - المملكة العربية السعودية</div>
+                        </div>
+                    </div>
+
+                    <!-- إقرار الاستلام -->
+                    <p class="lead fs-6 text-dark mb-4">
+                        أقر أنا الموقع أدناه، بأنني قد استلمت الأجهزة والمعدات التقنية الموضحة تفاصيلها بالجدول أدناه بحالة جيدة وسليمة للعمل، وتعتبر في عهدتي ومسؤوليتي الشخصية لأداء مهام العمل، وأتعهد بالمحافظة عليها وإعادتها لقسم تقنية المعلومات عند طلبها أو عند إخلاء الطرف:
+                    </p>
+
+                    <!-- بيانات الموظف المستلم -->
+                    <div class="row g-2 mb-4 bg-light p-3 rounded border">
+                        <div class="col-md-4">
+                            <strong>اسم الموظف:</strong> <span id="docEmpName" class="text-primary fw-bold">أحمد محمود</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>الرقم الوظيفي:</strong> <span id="docEmpId">EMP-102</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>القسم / الإدارة:</strong> <span id="docDept">المبيعات</span>
+                        </div>
+                        <div class="col-md-4 mt-2">
+                            <strong>الفرع:</strong> <span id="docEmpBranch" class="badge bg-secondary">فرع الخرج</span>
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <strong>الغرض من التسليم:</strong> <span id="docPurpose">جهاز لابتوب مخصص لمهام العمل الميداني</span>
+                        </div>
+                    </div>
+
+                    <!-- جدول تفاصيل العهدة والعتاد -->
+                    <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-list-check me-1"></i> تفاصيل الأصول والملحقات المسلمة:</h6>
+                    <table class="table table-bordered text-center align-middle mb-4">
+                        <thead class="table-light text-dark">
+                            <tr>
+                                <th>كود الأصل (Tag)</th>
+                                <th>نوع الجهاز والموديل</th>
+                                <th>الرقم التسلسلي (S/N)</th>
+                                <th>المواصفات الفنية</th>
+                                <th>الملحقات المسلمة</th>
+                                <th>الحالة الفنية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold font-monospace" id="docAssetTag">AST-1001</td>
+                                <td class="fw-bold" id="docAssetModel">Lenovo ThinkPad T14</td>
+                                <td class="font-monospace" id="docAssetSerial">PF38XK91</td>
+                                <td id="docAssetSpecs">Core i7, 32GB RAM, 1TB SSD</td>
+                                <td id="docAssetAcc">شاحن أصلي + حقيبة لابتوب + ماوس لاسلكي</td>
+                                <td><span class="badge bg-success">ممتازة وسليمة 100%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- شروط العهدة -->
+                    <div class="alert alert-secondary small p-2 mb-4">
+                        <strong>شروط وتعليمات هامة:</strong>
+                        <ul class="mb-0 ps-3">
+                            <li>يحظر تحميل برامج غير مصرح بها من قبل قسم تقنية المعلومات.</li>
+                            <li>الموظف مسؤول عن أمن وسلامة كلمات المرور وحماية الجهاز من الفقدان أو السوائل.</li>
+                            <li>في حال حدوث أي عطل أو تلف يجب إبلاغ قسم الـ IT فوراً عبر فتح تذكرة دعم فني.</li>
+                        </ul>
+                    </div>
+
+                    <!-- التوقيعات والاعتمادات -->
+                    <div class="row text-center mt-5 pt-3 border-top">
+                        <div class="col-4">
+                            <strong class="d-block mb-1">الموظف المستلم (صاحب العهدة)</strong>
+                            <small class="text-muted d-block">الاسم: <span id="docSignEmp">أحمد محمود</span></small>
+                            <div style="height: 60px;"></div>
+                            <div>التوقيع: ............................</div>
+                        </div>
+                        <div class="col-4">
+                            <strong class="d-block mb-1">مسؤول تسليم الـ IT</strong>
+                            <small class="text-muted d-block">الاسم: مهندس تقنية المعلومات</small>
+                            <div style="height: 60px;"></div>
+                            <div>التوقيع: ............................</div>
+                        </div>
+                        <div class="col-4">
+                            <strong class="d-block mb-1">مدير الفرع / الإدارة</strong>
+                            <small class="text-muted d-block">الاعتماد والختم الرسمي</small>
+                            <div style="height: 60px;"></div>
+                            <div>الختم: ............................</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary no-print">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-warning text-dark fw-bold" onclick="printElement('printableCustodyContainer')"><i class="fa-solid fa-print me-1"></i> طباعة المحضر الرسمي (A4)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================= MODAL: ASSET ADD / EDIT ======================= -->
+<div class="modal fade" id="assetModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="assetModalTitle">إضافة أصل جديد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assetEditId">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">كود الأصل (Asset Tag) *</label>
+                        <input type="text" id="formAssetTag" class="form-control" required placeholder="AST-1005">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">الفرع التابع له *</label>
+                        <select id="formAssetBranch" class="form-select border-primary" required>
+                            <option value="الإدارة">فرع الإدارة</option>
+                            <option value="الخرج">فرع الخرج</option>
+                            <option value="القادسية">فرع القادسية</option>
+                            <option value="ورشة ثقة">ورشة ثقة</option>
+                            <option value="جدة">فرع جدة</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">الفئة (Category) *</label>
+                        <select id="formAssetCategory" class="form-select">
+                            <option value="Laptop">Laptop</option>
+                            <option value="Desktop">Desktop</option>
+                            <option value="Server">Server</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Barcode Scanner">Barcode Scanner</option>
+                            <option value="Switch / Router">Switch / Router</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">الماركة والموديل *</label>
+                        <input type="text" id="formAssetModel" class="form-control" placeholder="Lenovo ThinkPad / HP LaserJet">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">الرقم التسلسلي (Serial No)</label>
+                        <input type="text" id="formAssetSerial" class="form-control" placeholder="PF38XK91">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">المواصفات الفنية</label>
+                        <input type="text" id="formAssetSpecs" class="form-control" placeholder="Core i7, 32GB RAM, 1TB SSD">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">الملحقات (لإضافتها في نموذج العهدة)</label>
+                        <input type="text" id="formAssetAcc" class="form-control" placeholder="شاحن، حقيبة، ماوس، كابل شبكة">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">عنوان الـ IP</label>
+                        <input type="text" id="formAssetIP" class="form-control" placeholder="192.168.10.x">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">عنوان الـ MAC</label>
+                        <input type="text" id="formAssetMAC" class="form-control" placeholder="00:1E:67:XX:XX:XX">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">الحالة *</label>
+                        <select id="formAssetStatus" class="form-select">
+                            <option value="In Use">قيد العمل (In Use)</option>
+                            <option value="In Stock">بالمخزن (In Stock)</option>
+                            <option value="In Maintenance">تحت الصيانة</option>
+                            <option value="Decommissioned">تالف / متقاعد</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">اسم الموظف المستلم (العهدة)</label>
+                        <input type="text" id="formAssetAssigned" class="form-control" placeholder="اسم الموظف">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">الرقم الوظيفي للمستلم</label>
+                        <input type="text" id="formAssetEmpId" class="form-control" placeholder="EMP-204">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">ملاحظات وموقع الجهاز بالفرع</label>
+                        <input type="text" id="formAssetNotes" class="form-control" placeholder="مكتب المحاسبة - الطابق الأول">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary fw-bold" onclick="saveAsset()">حفظ بيانات الأصل</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================= MODAL: NETWORK DEVICE ======================= -->
+<div class="modal fade" id="networkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">إضافة جهاز شبكة لفرع</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">الفرع *</label>
+                    <select id="formNetBranch" class="form-select border-primary">
+                        <option value="الإدارة">فرع الإدارة</option>
+                        <option value="الخرج">فرع الخرج</option>
+                        <option value="القادسية">فرع القادسية</option>
+                        <option value="ورشة ثقة">ورشة ثقة</option>
+                        <option value="جدة">فرع جدة</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">اسم الجهاز (Hostname) *</label>
+                    <input type="text" id="formNetHost" class="form-control" placeholder="SW-KHARJ-01">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">نوع الجهاز *</label>
+                    <select id="formNetType" class="form-select">
+                        <option value="Switch (Core)">Switch (Core)</option>
+                        <option value="Switch (Access)">Switch (Access)</option>
+                        <option value="Router">Router Gateway</option>
+                        <option value="Firewall">Firewall</option>
+                        <option value="Access Point">Access Point</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الموديل *</label>
+                    <input type="text" id="formNetModel" class="form-control" placeholder="Cisco Catalyst 9200">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Management IP *</label>
+                    <input type="text" id="formNetIP" class="form-control" placeholder="10.20.1.1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">موقع الراك (Rack Unit)</label>
+                    <input type="text" id="formNetRack" class="form-control" placeholder="Rack Main - U22">
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-info text-dark fw-bold" onclick="saveNetworkDevice()">حفظ الجهاز</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================= MODAL: TICKET ======================= -->
+<div class="modal fade" id="ticketModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">فتح تذكرة دعم فني لفرع</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">الفرع صاحب البلاغ *</label>
+                    <select id="formTicketBranch" class="form-select border-primary">
+                        <option value="الإدارة">فرع الإدارة</option>
+                        <option value="الخرج">فرع الخرج</option>
+                        <option value="القادسية">فرع القادسية</option>
+                        <option value="ورشة ثقة">ورشة ثقة</option>
+                        <option value="جدة">فرع جدة</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">عنوان المشكلة / الطلب *</label>
+                    <input type="text" id="formTicketTitle" class="form-control" placeholder="انقطاع الإنترنت بالفرع أو عطل طابعة الباركود">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">اسم مقدم الطلب *</label>
+                    <input type="text" id="formTicketReq" class="form-control" placeholder="اسم الموظف">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label">الأولوية</label>
+                        <select id="formTicketPri" class="form-select">
+                            <option value="High">حرجة (High)</option>
+                            <option value="Medium" selected>متوسطة (Medium)</option>
+                            <option value="Low">منخفضة (Low)</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">الفني المسؤول</label>
+                        <input type="text" id="formTicketTech" class="form-control" placeholder="مهندس الصيانة">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-warning text-dark fw-bold" onclick="saveTicket()">إرسال التذكرة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================= MODAL: LICENSE ======================= -->
+<div class="modal fade" id="licenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content card-custom">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">إضافة ترخيص برنامج</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">اسم البرنامج *</label>
+                    <input type="text" id="formLicName" class="form-control" placeholder="Office 365 Business">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">الشركة (Vendor)</label>
+                    <input type="text" id="formLicVendor" class="form-control" placeholder="Microsoft">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label">إجمالي المقاعد *</label>
+                        <input type="number" id="formLicTotal" class="form-control" value="20">
+                    </div>
+                    <div class="col">
+                        <label class="form-label">المستخدم حالياً</label>
+                        <input type="number" id="formLicUsed" class="form-control" value="5">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success fw-bold" onclick="saveLicense()">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JAVASCRIPT APPLICATION CODE -->
+<script>
+const STORAGE_KEYS = {
+    ASSETS: 'it_branches_assets_v2',
+    NETWORK: 'it_branches_network_v2',
+    TICKETS: 'it_branches_tickets_v2',
+    LICENSES: 'it_branches_licenses_v2',
+    CUSTODY_LOG: 'it_branches_custody_log_v2'
+};
+
+const BRANCHES = ["الإدارة", "الخرج", "القادسية", "ورشة ثقة", "جدة"];
+
+// Seed initial realistic data for all 5 branches
+function initData() {
+    if (!localStorage.getItem(STORAGE_KEYS.ASSETS)) {
+        const defaultAssets = [
+            { id: 1, tag: 'AST-ADM-01', branch: 'الإدارة', category: 'Laptop', model: 'Lenovo ThinkPad T14 Gen 4', serial: 'PF38XK91', specs: 'Core i7, 32GB RAM, 1TB SSD', accessories: 'شاحن + حقيبة + ماوس لاسلكي', ip: '10.10.10.45', mac: '38:F9:D3:1B:7A:20', status: 'In Use', assigned: 'م. أحمد محمود', empId: 'EMP-101', notes: 'مكتب الإدارة العامة' },
+            { id: 2, tag: 'AST-KHJ-01', branch: 'الخرج', category: 'Desktop', model: 'Dell OptiPlex 7000', serial: '5CD2410MKL', specs: 'Core i5, 16GB RAM, 512GB SSD', accessories: 'شاشة 24 بوصة + كيبورد وماوس', ip: '10.20.10.12', mac: 'A0:B1:C2:D3:E4:F5', status: 'In Use', assigned: 'خالد السبيعي', empId: 'EMP-205', notes: 'مكتب المحاسبة - فرع الخرج' },
+            { id: 3, tag: 'AST-QAD-01', branch: 'القادسية', category: 'Laptop', model: 'HP EliteBook 840 G10', serial: 'R90X81AA', specs: 'Core i7, 16GB RAM, 512GB SSD', accessories: 'حقيبة وشاحن أصلي', ip: '10.30.10.22', mac: '00:1E:67:D2:C1:99', status: 'In Use', assigned: 'سلطان القحطاني', empId: 'EMP-304', notes: 'إدارة فرع القادسية' },
+            { id: 4, tag: 'AST-THQ-01', branch: 'ورشة ثقة', category: 'Desktop', model: 'HP ProDesk 400 G7', serial: 'LNV-89214', specs: 'Core i5, 16GB RAM, 512GB SSD', accessories: 'طابعة فواتير وباركود + شاشة', ip: '10.40.10.15', mac: '1C:69:7A:88:99:11', status: 'In Use', assigned: 'م. فهد الدوسري', empId: 'EMP-402', notes: 'استقبال وفحص - ورشة ثقة' },
+            { id: 5, tag: 'AST-JED-01', branch: 'جدة', category: 'Laptop', model: 'Dell Latitude 5530', serial: 'DL-772189', specs: 'Core i7, 16GB RAM, 512GB SSD', accessories: 'شاحن + حقيبة ظهر', ip: '10.50.10.18', mac: '2C:33:44:55:66:77', status: 'In Use', assigned: 'عمر الغامدي', empId: 'EMP-501', notes: 'إدارة مبيعات فرع جدة' },
+            { id: 6, tag: 'AST-ADM-02', branch: 'الإدارة', category: 'Server', model: 'Dell PowerEdge R750', serial: 'SRV-88210', specs: '2x Xeon Gold, 128GB RAM, 8TB SAS', accessories: 'كوابل بور مضاعفة + ريل كيت', ip: '10.10.1.10', mac: '00:1E:67:88:99:00', status: 'In Use', assigned: 'فريق الـ IT', empId: 'IT-TEAM', notes: 'السيرفر الرئيسي (Active Directory)' },
+            { id: 7, tag: 'AST-STK-01', branch: 'الإدارة', category: 'Laptop', model: 'Lenovo V15 G3', serial: 'LNV-110022', specs: 'Core i5, 8GB RAM, 256GB SSD', accessories: 'شاحن أصلي', ip: '', mac: '', status: 'In Stock', assigned: '', empId: '', notes: 'جهاز احتياطي في مستودع الإدارة' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(defaultAssets));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.NETWORK)) {
+        const defaultNet = [
+            { id: 1, branch: 'الإدارة', host: 'SW-ADM-CORE-01', type: 'Switch (Core)', model: 'Cisco Catalyst 9300', ip: '10.10.1.2', rack: 'Rack 01 - U40', status: 'Online', notes: 'سويتش الكور الرئيسي للإدارة' },
+            { id: 2, branch: 'الخرج', host: 'RT-KHARJ-EDGE', type: 'Router Gateway', model: 'Cisco ISR 4331', ip: '10.20.1.1', rack: 'Wall Rack - U04', status: 'Online', notes: 'راوتر الربط VPN لفرع الخرج' },
+            { id: 3, branch: 'القادسية', host: 'SW-QAD-ACC-01', type: 'Switch (Access)', model: 'Aruba 2530-24G', ip: '10.30.1.2', rack: 'Wall Rack - U06', status: 'Online', notes: 'سويتش التوزيع بفرع القادسية' },
+            { id: 4, branch: 'ورشة ثقة', host: 'FW-THIQAH-01', type: 'Firewall', model: 'FortiGate 40F', ip: '10.40.1.254', rack: 'Rack Thiqah - U02', status: 'Online', notes: 'جدار ناري وشبكة ورشة ثقة' },
+            { id: 5, branch: 'جدة', host: 'RT-JEDDAH-GW', type: 'Router Gateway', model: 'Cisco ISR 1100', ip: '10.50.1.1', rack: 'Rack Jeddah - U08', status: 'Online', notes: 'راوتر البوابة لفرع جدة' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.NETWORK, JSON.stringify(defaultNet));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.TICKETS)) {
+        const defaultTickets = [
+            { id: 1, branch: 'الخرج', number: 'TCK-KHJ-101', title: 'عطل في طابعة الباركود بالمستودع', requester: 'خالد السبيعي', priority: 'High', status: 'In Progress', tech: 'م. الشبكات' },
+            { id: 2, branch: 'ورشة ثقة', number: 'TCK-THQ-102', title: 'طلب ربط جهاز فحص السيارات بالشبكة', requester: 'فهد الدوسري', priority: 'Medium', status: 'Open', tech: 'دعم فني' },
+            { id: 3, branch: 'جدة', number: 'TCK-JED-103', title: 'بطء في تصفح نظام الفواتير', requester: 'عمر الغامدي', priority: 'Medium', status: 'Resolved', tech: 'م. النظم' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(defaultTickets));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.LICENSES)) {
+        const defaultLic = [
+            { id: 1, name: 'Microsoft 365 Business Standard', vendor: 'Microsoft', total: 60, used: 45 },
+            { id: 2, name: 'Kaspersky Endpoint Security', vendor: 'Kaspersky', total: 70, used: 52 }
+        ];
+        localStorage.setItem(STORAGE_KEYS.LICENSES, JSON.stringify(defaultLic));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.CUSTODY_LOG)) {
+        const defaultCustody = [
+            { id: 1, type: 'تسليم عهدة (Check-out)', branch: 'الخرج', tag: 'AST-KHJ-01', emp: 'خالد السبيعي', empId: 'EMP-205', date: '2026-10-18', model: 'Dell OptiPlex 7000' },
+            { id: 2, type: 'تسليم عهدة (Check-out)', branch: 'جدة', tag: 'AST-JED-01', emp: 'عمر الغامدي', empId: 'EMP-501', date: '2026-10-22', model: 'Dell Latitude 5530' },
+            { id: 3, type: 'تسليم عهدة (Check-out)', branch: 'الإدارة', tag: 'AST-ADM-01', emp: 'أحمد محمود', empId: 'EMP-101', date: '2026-10-25', model: 'Lenovo ThinkPad T14' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.CUSTODY_LOG, JSON.stringify(defaultCustody));
+    }
+}
+
+// Navigation Tab Switcher
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById('tab-' + tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    if (tabId === 'dashboard') updateDashboard();
+    if (tabId === 'assets') renderAssetsTable();
+    if (tabId === 'network') renderNetworkTable();
+    if (tabId === 'custody') renderCustodyTable();
+    if (tabId === 'tickets') renderTicketsTable();
+    if (tabId === 'licenses') renderLicensesTable();
+}
+
+// ----------------- ASSETS FUNCTIONS -----------------
+function getAssets() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.ASSETS) || '[]');
+}
+
+function saveAssetsList(list) {
+    localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(list));
+    renderAssetsTable();
+    updateDashboard();
+}
+
+function renderAssetsTable() {
+    const list = getAssets();
+    const q = document.getElementById('assetSearchInput').value.toLowerCase().trim();
+    const branch = document.getElementById('assetBranchFilter').value;
+    const cat = document.getElementById('assetCategoryFilter').value;
+    const stat = document.getElementById('assetStatusFilter').value;
+    const tbody = document.getElementById('assetsTableBody');
+    tbody.innerHTML = '';
+
+    const filtered = list.filter(item => {
+        const matchesQ = !q || (item.tag && item.tag.toLowerCase().includes(q)) ||
+                               (item.serial && item.serial.toLowerCase().includes(q)) ||
+                               (item.model && item.model.toLowerCase().includes(q)) ||
+                               (item.ip && item.ip.toLowerCase().includes(q)) ||
+                               (item.assigned && item.assigned.toLowerCase().includes(q));
+        const matchesBranch = !branch || item.branch === branch;
+        const matchesCat = !cat || item.category === cat;
+        const matchesStat = !stat || item.status === stat;
+        return matchesQ && matchesBranch && matchesCat && matchesStat;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-secondary">لا توجد أصول مطابقة لمعايير البحث في هذا الفرع.</td></tr>';
+        return;
+    }
+
+    filtered.forEach(a => {
+        let badgeClass = a.status === 'In Use' ? 'badge-inuse' : (a.status === 'In Stock' ? 'badge-stock' : 'badge-maint');
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-bold text-info">${a.tag}</td>
+            <td><span class="badge badge-branch"><i class="fa-solid fa-location-dot me-1 text-primary"></i> ${a.branch}</span></td>
+            <td>
+                <div class="fw-bold">${a.model}</div>
+                <small class="text-secondary">${a.category} | S/N: ${a.serial || '-'}</small>
+            </td>
+            <td><small class="text-light">${a.specs || '-'}</small></td>
+            <td>
+                <div class="font-monospace text-primary">${a.ip || '-'}</div>
+                <small class="font-monospace text-secondary">${a.mac || '-'}</small>
+            </td>
+            <td><span class="badge ${badgeClass}">${a.status}</span></td>
+            <td>${a.assigned ? '<i class="fa-solid fa-user me-1 text-info"></i> ' + a.assigned : '<span class="text-secondary">-</span>'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-light" title="طباعة ملصق الباركود" onclick="showBarcodeModal(${a.id})">
+                    <i class="fa-solid fa-qrcode text-warning"></i> ملصق QR
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning" title="طباعة محضر استلام وتسليم" onclick="showCustodyModal(${a.id})">
+                    <i class="fa-solid fa-file-contract"></i> محضر عهدة
+                </button>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editAsset(${a.id})"><i class="fa-solid fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAsset(${a.id})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openAddAssetModal() {
+    document.getElementById('assetModalTitle').innerText = 'إضافة أصل جديد لفرع';
+    document.getElementById('assetEditId').value = '';
+    document.getElementById('formAssetTag').value = 'AST-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('formAssetBranch').value = 'الإدارة';
+    document.getElementById('formAssetCategory').value = 'Laptop';
+    document.getElementById('formAssetModel').value = '';
+    document.getElementById('formAssetSerial').value = '';
+    document.getElementById('formAssetSpecs').value = '';
+    document.getElementById('formAssetAcc').value = 'شاحن أصلي + حقيبة + ماوس';
+    document.getElementById('formAssetIP').value = '';
+    document.getElementById('formAssetMAC').value = '';
+    document.getElementById('formAssetStatus').value = 'In Use';
+    document.getElementById('formAssetAssigned').value = '';
+    document.getElementById('formAssetEmpId').value = '';
+    document.getElementById('formAssetNotes').value = '';
+    new bootstrap.Modal(document.getElementById('assetModal')).show();
+}
+
+function editAsset(id) {
+    const list = getAssets();
+    const a = list.find(item => item.id === id);
+    if (!a) return;
+
+    document.getElementById('assetModalTitle').innerText = 'تعديل بيانات الأصل';
+    document.getElementById('assetEditId').value = a.id;
+    document.getElementById('formAssetTag').value = a.tag;
+    document.getElementById('formAssetBranch').value = a.branch || 'الإدارة';
+    document.getElementById('formAssetCategory').value = a.category;
+    document.getElementById('formAssetModel').value = a.model;
+    document.getElementById('formAssetSerial').value = a.serial || '';
+    document.getElementById('formAssetSpecs').value = a.specs || '';
+    document.getElementById('formAssetAcc').value = a.accessories || '';
+    document.getElementById('formAssetIP').value = a.ip || '';
+    document.getElementById('formAssetMAC').value = a.mac || '';
+    document.getElementById('formAssetStatus').value = a.status;
+    document.getElementById('formAssetAssigned').value = a.assigned || '';
+    document.getElementById('formAssetEmpId').value = a.empId || '';
+    document.getElementById('formAssetNotes').value = a.notes || '';
+
+    new bootstrap.Modal(document.getElementById('assetModal')).show();
+}
+
+function saveAsset() {
+    const tag = document.getElementById('formAssetTag').value.trim();
+    const model = document.getElementById('formAssetModel').value.trim();
+    const branch = document.getElementById('formAssetBranch').value;
+    if (!tag || !model) {
+        alert('يرجى كتابة كود الأصل والموديل');
+        return;
+    }
+
+    const editId = document.getElementById('assetEditId').value;
+    let list = getAssets();
+
+    const assetData = {
+        id: editId ? parseInt(editId) : Date.now(),
+        tag: tag,
+        branch: branch,
+        category: document.getElementById('formAssetCategory').value,
+        model: model,
+        serial: document.getElementById('formAssetSerial').value.trim(),
+        specs: document.getElementById('formAssetSpecs').value.trim(),
+        accessories: document.getElementById('formAssetAcc').value.trim(),
+        ip: document.getElementById('formAssetIP').value.trim(),
+        mac: document.getElementById('formAssetMAC').value.trim(),
+        status: document.getElementById('formAssetStatus').value,
+        assigned: document.getElementById('formAssetAssigned').value.trim(),
+        empId: document.getElementById('formAssetEmpId').value.trim(),
+        notes: document.getElementById('formAssetNotes').value.trim()
+    };
+
+    if (editId) {
+        const index = list.findIndex(i => i.id === parseInt(editId));
+        if (index !== -1) list[index] = assetData;
+    } else {
+        list.push(assetData);
+        // إضافة حركة عهدة تلقائية إذا كان مسنداً لموظف
+        if (assetData.assigned) {
+            logCustodyRecord('تسليم عهدة (Check-out)', assetData.branch, assetData.tag, assetData.assigned, assetData.empId, assetData.model);
+        }
+    }
+
+    saveAssetsList(list);
+    bootstrap.Modal.getInstance(document.getElementById('assetModal')).hide();
+}
+
+function deleteAsset(id) {
+    if (!confirm('حذف هذا الأصل نهائياً من قاعدة البيانات؟')) return;
+    let list = getAssets().filter(a => a.id !== id);
+    saveAssetsList(list);
+}
+
+function exportAssetsCSV() {
+    const list = getAssets();
+    let csv = "\uFEFFكود الأصل,الفرع,النوع,الموديل,الرقم التسلسلي,المواصفات,IP,MAC,الحالة,المستلم,الرقم الوظيفي,ملاحظات\n";
+    list.forEach(a => {
+        csv += `"${a.tag}","${a.branch}","${a.category}","${a.model}","${a.serial || ''}","${a.specs || ''}","${a.ip || ''}","${a.mac || ''}","${a.status}","${a.assigned || ''}","${a.empId || ''}","${a.notes || ''}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "it_company_assets.csv";
+    link.click();
+}
+
+// ----------------- BARCODE GENERATION & PRINTING -----------------
+function showBarcodeModal(id) {
+    try {
+        const a = getAssets().find(item => item.id === id);
+        if (!a) return;
+
+        // تحديث بيانات ملصق الاستيكر
+        document.getElementById('lblBranch').innerText = 'فرع ' + (a.branch || 'الإدارة');
+        document.getElementById('lblTag').innerText = a.tag || '';
+        document.getElementById('lblModel').innerText = (a.model || '') + ' (' + (a.category || '') + ')';
+        document.getElementById('lblSerial').innerText = 'S/N: ' + (a.serial || 'N/A');
+        document.getElementById('lblUser').innerText = a.assigned ? 'المستلم: ' + a.assigned : 'بالمخزن';
+        
+        // وضع الشعار في الاستيكر
+        const logoImgInPage = document.querySelector('nav img');
+        if (logoImgInPage && document.getElementById('stickerLogoImg')) {
+            document.getElementById('stickerLogoImg').src = logoImgInPage.src;
+        }
+
+        // توليد رمز QR كود دقيق وسريع القراءة
+        const qrContainer = document.getElementById('qrcodeCanvas');
+        qrContainer.innerHTML = '';
+        
+        // نص احترافي ومختصر يتناسب تماماً مع سعة الـ QR وسرعة مسحه بكاميرا الجوال
+        const qrText = `MORNI IT
+Tag: ${a.tag}
+Branch: ${a.branch || 'الإدارة'}
+SN: ${a.serial || 'N/A'}
+Model: ${a.model || ''}`;
+
+        function generateQR(text) {
+            try {
+                // محاولة توليد بالترميز العربي
+                const encoded = unescape(encodeURIComponent(text));
+                new QRCode(qrContainer, {
+                    text: encoded,
+                    width: 95,
+                    height: 95,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.L
+                });
+                return true;
+            } catch (e1) {
+                try {
+                    // محاولة ثانية بنص مباشر ومختصر
+                    qrContainer.innerHTML = '';
+                    const fallbackText = `MORNI IT: ${a.tag} | S/N: ${a.serial || 'N/A'}`;
+                    new QRCode(qrContainer, {
+                        text: fallbackText,
+                        width: 95,
+                        height: 95,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+                    return true;
+                } catch (e2) {
+                    console.error("QR Fallback error:", e2);
+                    qrContainer.innerHTML = `<div class="p-2 border text-center small fw-bold">${a.tag}</div>`;
+                    return false;
+                }
+            }
+        }
+
+        generateQR(qrText);
+
+        // فتح نافذة المعاينة والطباعة مباشرة
+        const modalEl = document.getElementById('barcodePrintModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modalInstance.show();
+    } catch (err) {
+        console.error("Error in showBarcodeModal:", err);
+    }
+}
+
+// ----------------- CUSTODY PRINTING (محضر العهدة) -----------------
+function showCustodyModal(id) {
+    const a = getAssets().find(item => item.id === id);
+    if (!a) return;
+
+    document.getElementById('docBranch').innerText = a.branch;
+    document.getElementById('docNumber').innerText = Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('docDate').innerText = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('docEmpName').innerText = a.assigned || 'اسم الموظف المستلم';
+    document.getElementById('docEmpId').innerText = a.empId || '---';
+    document.getElementById('docEmpBranch').innerText = a.branch;
+    document.getElementById('docSignEmp').innerText = a.assigned || 'الموظف المستلم';
+
+    document.getElementById('docAssetTag').innerText = a.tag;
+    document.getElementById('docAssetModel').innerText = a.model + ' (' + a.category + ')';
+    document.getElementById('docAssetSerial').innerText = a.serial || 'N/A';
+    document.getElementById('docAssetSpecs').innerText = a.specs || 'المواصفات القياسية للجهاز';
+    document.getElementById('docAssetAcc').innerText = a.accessories || 'شاحن أصلي + كابل توصيل';
+
+    new bootstrap.Modal(document.getElementById('custodyPrintModal')).show();
+}
+
+function openCustomHandoverModal() {
+    alert('يمكنك طباعة محضر العهدة لأي جهاز مباشرة بالضغط على زر "محضر عهدة" الأصفر بجانب الجهاز في جدول الأصول.');
+    switchTab('assets');
+}
+
+function logCustodyRecord(type, branch, tag, emp, empId, model) {
+    let logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTODY_LOG) || '[]');
+    logs.unshift({
+        id: Date.now(),
+        type: type,
+        branch: branch,
+        tag: tag,
+        emp: emp,
+        empId: empId,
+        date: new Date().toISOString().split('T')[0],
+        model: model
+    });
+    localStorage.setItem(STORAGE_KEYS.CUSTODY_LOG, JSON.stringify(logs));
+    renderCustodyTable();
+}
+
+function renderCustodyTable() {
+    const logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTODY_LOG) || '[]');
+    const tbody = document.getElementById('custodyLogTableBody');
+    tbody.innerHTML = '';
+    logs.forEach(l => {
+        tbody.innerHTML += `
+            <tr>
+                <td><span class="badge bg-primary">${l.type}</span></td>
+                <td><span class="badge badge-branch">${l.branch}</span></td>
+                <td class="fw-bold text-info">${l.tag}</td>
+                <td class="fw-bold text-white">${l.emp}</td>
+                <td>${l.empId || '-'}</td>
+                <td>${l.date}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-warning" onclick="showCustodyModalByTag('${l.tag}')">
+                        <i class="fa-solid fa-print me-1"></i> طباعة النموذج
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function showCustodyModalByTag(tag) {
+    const a = getAssets().find(item => item.tag === tag);
+    if (a) showCustodyModal(a.id);
+}
+
+// أداة الطباعة العامة
+// أداة الطباعة المباشرة والذكية (لا تحجبها المتصفحات وتطبع فوراً بجودة فائقة)
+function printElement(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    // إزالة كلاس الطباعة من أي عنصر سابق
+    document.querySelectorAll('.printable-area').forEach(item => item.classList.remove('printable-area'));
+    
+    // إضافة كلاس الطباعة للعنصر المحدد
+    el.classList.add('printable-area');
+
+    // تشغيل أمر الطباعة المباشر للنظام
+    window.print();
+
+    // إزالة الكلاس بعد الانتهاء
+    setTimeout(() => {
+        el.classList.remove('printable-area');
+    }, 1500);
+}
+
+// ----------------- NETWORK FUNCTIONS -----------------
+function getNetwork() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.NETWORK) || '[]');
+}
+function renderNetworkTable() {
+    const list = getNetwork();
+    const tbody = document.getElementById('networkTableBody');
+    tbody.innerHTML = '';
+    list.forEach(d => {
+        tbody.innerHTML += `
+            <tr>
+                <td><span class="badge badge-branch">${d.branch}</span></td>
+                <td class="fw-bold text-info"><i class="fa-solid fa-server me-2"></i> ${d.host}</td>
+                <td>${d.type} - ${d.model}</td>
+                <td class="font-monospace text-primary fw-bold">${d.ip}</td>
+                <td><span class="badge bg-dark border border-secondary">${d.rack || 'N/A'}</span></td>
+                <td><span class="badge bg-success">${d.status}</span></td>
+                <td><button class="btn btn-sm btn-outline-info" onclick="simulatePing('${d.ip}', this)"><i class="fa-solid fa-wifi"></i> فحص</button></td>
+                <td><small class="text-secondary">${d.notes || '-'}</small></td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="deleteNetwork(${d.id})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
+        `;
+    });
+}
+function openAddNetModal() {
+    new bootstrap.Modal(document.getElementById('networkModal')).show();
+}
+function saveNetworkDevice() {
+    const host = document.getElementById('formNetHost').value.trim();
+    const ip = document.getElementById('formNetIP').value.trim();
+    if (!host || !ip) { alert('يرجى ملء اسم الجهاز والـ IP'); return; }
+
+    const list = getNetwork();
+    list.push({
+        id: Date.now(),
+        branch: document.getElementById('formNetBranch').value,
+        host: host,
+        type: document.getElementById('formNetType').value,
+        model: document.getElementById('formNetModel').value.trim(),
+        ip: ip,
+        rack: document.getElementById('formNetRack').value.trim(),
+        status: 'Online',
+        notes: ''
+    });
+    localStorage.setItem(STORAGE_KEYS.NETWORK, JSON.stringify(list));
+    renderNetworkTable();
+    updateDashboard();
+    bootstrap.Modal.getInstance(document.getElementById('networkModal')).hide();
+}
+function deleteNetwork(id) {
+    if (!confirm('حذف هذا الجهاز؟')) return;
+    let list = getNetwork().filter(d => d.id !== id);
+    localStorage.setItem(STORAGE_KEYS.NETWORK, JSON.stringify(list));
+    renderNetworkTable();
+    updateDashboard();
+}
+
+// ----------------- TICKETS & LICENSES -----------------
+function getTickets() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.TICKETS) || '[]');
+}
+function renderTicketsTable() {
+    const list = getTickets();
+    const tbody = document.getElementById('ticketsTableBody');
+    tbody.innerHTML = '';
+    list.forEach(t => {
+        let statusBadge = t.status === 'Resolved' ? 'bg-success' : (t.status === 'In Progress' ? 'bg-warning text-dark' : 'bg-danger');
+        tbody.innerHTML += `
+            <tr>
+                <td class="fw-bold text-info">${t.number}</td>
+                <td><span class="badge badge-branch">${t.branch}</span></td>
+                <td class="fw-bold">${t.title}</td>
+                <td>${t.requester}</td>
+                <td><span class="badge ${t.priority === 'High' ? 'bg-danger' : 'bg-secondary'}">${t.priority}</span></td>
+                <td><span class="badge ${statusBadge}">${t.status}</span></td>
+                <td><i class="fa-solid fa-user-gear me-1 text-secondary"></i> ${t.tech || 'غير محدد'}</td>
+                <td>
+                    <select class="form-select form-select-sm" onchange="updateTicketStatus(${t.id}, this.value)">
+                        <option value="Open" ${t.status === 'Open' ? 'selected' : ''}>مفتوحة</option>
+                        <option value="In Progress" ${t.status === 'In Progress' ? 'selected' : ''}>قيد المعالجة</option>
+                        <option value="Resolved" ${t.status === 'Resolved' ? 'selected' : ''}>تم الحل</option>
+                    </select>
+                </td>
+            </tr>
+        `;
+    });
+}
+function openAddTicketModal() {
+    new bootstrap.Modal(document.getElementById('ticketModal')).show();
+}
+function saveTicket() {
+    const title = document.getElementById('formTicketTitle').value.trim();
+    const req = document.getElementById('formTicketReq').value.trim();
+    if (!title || !req) return;
+
+    const list = getTickets();
+    list.push({
+        id: Date.now(),
+        branch: document.getElementById('formTicketBranch').value,
+        number: 'TCK-' + Math.floor(1000 + Math.random() * 9000),
+        title: title,
+        requester: req,
+        priority: document.getElementById('formTicketPri').value,
+        status: 'Open',
+        tech: document.getElementById('formTicketTech').value.trim()
+    });
+    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(list));
+    renderTicketsTable();
+    updateDashboard();
+    bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+}
+function updateTicketStatus(id, newStatus) {
+    let list = getTickets();
+    const t = list.find(item => item.id === id);
+    if (t) {
+        t.status = newStatus;
+        localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(list));
+        renderTicketsTable();
+        updateDashboard();
+    }
+}
+
+function getLicenses() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.LICENSES) || '[]');
+}
+function renderLicensesTable() {
+    const list = getLicenses();
+    const tbody = document.getElementById('licensesTableBody');
+    tbody.innerHTML = '';
+    list.forEach(l => {
+        const avail = l.total - l.used;
+        const pct = l.total > 0 ? (l.used / l.total) * 100 : 0;
+        tbody.innerHTML += `
+            <tr>
+                <td class="fw-bold text-white">${l.name}</td>
+                <td>${l.vendor}</td>
+                <td class="font-monospace text-secondary">LIC-KEY-2026</td>
+                <td class="fw-bold">${l.total}</td>
+                <td class="text-info">${l.used}</td>
+                <td class="fw-bold ${avail <= 0 ? 'text-danger' : 'text-success'}">${avail}</td>
+                <td style="width: 150px;">
+                    <div class="progress" style="height: 8px; background-color: #334155;">
+                        <div class="progress-bar ${pct > 85 ? 'bg-danger' : 'bg-success'}" style="width: ${pct}%"></div>
+                    </div>
+                </td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="deleteLicense(${l.id})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
+        `;
+    });
+}
+function openAddLicenseModal() {
+    new bootstrap.Modal(document.getElementById('licenseModal')).show();
+}
+function saveLicense() {
+    const name = document.getElementById('formLicName').value.trim();
+    if (!name) return;
+    const list = getLicenses();
+    list.push({
+        id: Date.now(),
+        name: name,
+        vendor: document.getElementById('formLicVendor').value.trim(),
+        total: parseInt(document.getElementById('formLicTotal').value || 10),
+        used: parseInt(document.getElementById('formLicUsed').value || 0)
+    });
+    localStorage.setItem(STORAGE_KEYS.LICENSES, JSON.stringify(list));
+    renderLicensesTable();
+    bootstrap.Modal.getInstance(document.getElementById('licenseModal')).hide();
+}
+function deleteLicense(id) {
+    let list = getLicenses().filter(l => l.id !== id);
+    localStorage.setItem(STORAGE_KEYS.LICENSES, JSON.stringify(list));
+    renderLicensesTable();
+}
+
+function simulatePing(ip, btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    setTimeout(() => {
+        btn.innerHTML = '<span class="badge bg-success">Online</span>';
+        btn.disabled = false;
+        setTimeout(() => { btn.innerHTML = originalText; }, 2500);
+    }, 600);
+}
+
+// ----------------- DASHBOARD & CHARTS -----------------
+let branchChartInstance = null;
+let statusChartInstance = null;
+
+function updateDashboard() {
+    const assets = getAssets();
+    const tickets = getTickets();
+
+    const inUse = assets.filter(a => a.status === 'In Use').length;
+    const inStock = assets.filter(a => a.status === 'In Stock').length;
+    const inMaint = assets.filter(a => a.status === 'In Maintenance').length;
+    const openTickets = tickets.filter(t => t.status !== 'Resolved').length;
+
+    document.getElementById('stat-total-assets').innerText = assets.length;
+    document.getElementById('stat-in-use').innerText = inUse;
+    document.getElementById('stat-in-stock').innerText = inStock;
+    document.getElementById('stat-open-tickets').innerText = openTickets;
+
+    // تحديث أعداد كل فرع
+    const branchCounts = { "الإدارة": 0, "الخرج": 0, "القادسية": 0, "ورشة ثقة": 0, "جدة": 0 };
+    assets.forEach(a => {
+        if (branchCounts.hasOwnProperty(a.branch)) {
+            branchCounts[a.branch]++;
+        }
+    });
+
+    document.getElementById('branch-count-admin').innerText = branchCounts["الإدارة"];
+    document.getElementById('branch-count-kharj').innerText = branchCounts["الخرج"];
+    document.getElementById('branch-count-qad').innerText = branchCounts["القادسية"];
+    document.getElementById('branch-count-thiqah').innerText = branchCounts["ورشة ثقة"];
+    document.getElementById('branch-count-jed').innerText = branchCounts["جدة"];
+
+    // رسم بياني للفروع
+    const branchCtx = document.getElementById('branchChart').getContext('2d');
+    if (branchChartInstance) branchChartInstance.destroy();
+    branchChartInstance = new Chart(branchCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(branchCounts),
+            datasets: [{
+                label: 'عدد الأصول',
+                data: Object.values(branchCounts),
+                backgroundColor: ['#2563eb', '#16a34a', '#d97706', '#06b6d4', '#ef4444'],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#94a3b8', font: { family: 'Cairo' } }, grid: { display: false } },
+                y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#334155' } }
+            }
+        }
+    });
+
+    // رسم بياني للحالة
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    if (statusChartInstance) statusChartInstance.destroy();
+    statusChartInstance = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['قيد العمل بالفروع', 'بالمخزن', 'تحت الصيانة'],
+            datasets: [{
+                data: [inUse, inStock, inMaint],
+                backgroundColor: ['#0284c7', '#16a34a', '#d97706'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#e2e8f0', font: { family: 'Cairo' } } } }
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    initData();
+    updateDashboard();
+    renderCustodyTable();
+});
+</script>
+</body>
+</html>
